@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giriş/Kayıt Sistemi</title>
+    <style>
+        body {
+            font-family: "Segoe UI", sans-serif;
+            background: linear-gradient(to right, #ffffff, hsla(250, 3%, 64%, 0.651));
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+        }
+        img {
+            width: 45%;
+            height: 65%;
+            background-position: bottom;
+            position: absolute;
+            background-size: auto;
+            opacity: 0.35;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            width: 350px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            z-index: 1;
+        }
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .tabs button {
+            flex: 1;
+            padding: 10px;
+            cursor: pointer;
+            border: none;
+            background: #ccc;
+            font-weight: bold;
+        }
+        .tabs button.active {
+            background-color: red;
+            color: white;
+        }
+        .form {
+            display: none;
+            flex-direction: column;
+        }
+        .form.active{
+            display: flex;
+        }
+        input {
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+        button.submit {
+            background-color: red;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .message {
+            margin-top: 10px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="tabs">
+            <button id="girişTab" class="active" onclick="showForm('giris')">Giriş Yap </button>
+             <button id="kayitTab" onclick="showForm('Kayıt')">Kayıt ol</button>
+        </div>
+        <div id="girisForm" class="form active">
+            <input type="text" id="girisKullanıcı" placeholder="Kullanıcı Adı Veya E-posta Giriniz" required />
+            <input type="password" id="girisSifre" placeholder="Şifre" required />
+            <button class="submit" onclick="girisyap()">Giriş Yap</button>
+            <div class="message" id="girisMesaj"></div>
+            <label><input type="checkbox" id="hatirlaChechbox">Şifremi hatırla</label>
+        </div>
+        <div id="kayitForm" class="form">
+            <input type="text" id="kayitAdSoyad" placeholder="Ad Soyad" required />
+            <input type="email" id="kayitEmail" placeholder="E-posta" required/>
+            <input type="text" id="kayitKullanici"placeholder="Kullanıcı Adı" required/>
+            <input type="password" id="kayitSifre" placeholder="Şifre" required/>
+            <input type="password" id="kayitSifre2" placeholder="Şifre Tekrar" required/>
+            <button class="submit" onclick="kayitol()">Kayıt Ol</button>
+            <div class="message" id="kayitMesaj"></div>
+        </div>
+        <script>
+            const showForm = (tab) => {
+                document.getElementById("girisForm").classList.remove("active");
+                document.getElementById("kayitForm").classList.remove("active");
+                document.getElementById("girisTab").classList.remove("active");
+                document.getElementById("kayitTab").classList.remove("active");
+                document.getElementById(tab + "Form").classList.add("active");
+                document.getElementById(tab + "Tab").classList.add("active");
+            };
+            const kayitol = () => {
+                const adsoyad = document.getElementById("kayitAdSoyad").value.trim();
+                const email = document.getElementById("kayitEmail").value.trim();
+                const kullanici = document.getElementById("kayitKullanici").value.trim();
+                const sifre = document.getElementById("kayitSifre").value;
+                const sifre2 = document.getElementById("kayitSifre2").value;
+                const mesaj = document.getElementById("kayitMesaj");
+                
+                if (!adsoyad || !email || !kullanici || !sifre || !sifre2) {
+                    mesaj.innerText = "⚠️ Tüm Alanları Doldurun.";
+                    return;
+                }
+
+                if (!email.includes("@") || !email.includes(".")) {
+                    mesaj.innerText = "❌ Geçerli bir e-posta girin.";
+                    return;
+                }
+                if (sifre !== sifre2) {
+                    mesaj.innerText = "❌ Şifreler uyuşmuyor!";
+                    return;
+                } 
+                const bilgiler = { adsoyad, email, sifre };
+                localStorage.setItem(kullanici, JSON.stringify(bilgiler));
+                mesaj.innerText = "✅ Kayıt başarlı!";
+            };
+            const girisYap = () => {
+                const girilen = document.getElementById("girisKullanici").value.trim();
+                const sifre = document.getElementById("girisSifre").value;
+                const mesaj = document.getElementById("girisMesaj");
+                const hatirla = document.getElementById("hatirlaCheckbox").checked;
+
+                let bulundu = false;
+
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key === "aktifKullanici") continue;
+
+                    try {
+                        const veri = JSON.parse(localStorage.getItem(key));
+                        if ((key === girilen || veri.email === girilen) && veri.sifre === sifre) {
+                            mesaj.innerText = "✅ Giriş Başarılı!";
+                            localStorage.setItem("aktifKullanici");
+                        
+                        
+                        if (hatirla) {
+                            localStorage.setItem("hatirlaKullanici", girilen);
+                        } else {
+                            localStorage.removeItem("hatirlaKullanici");
+                        }
+                        setTimeout(() => {
+                            window.location.href = "anasayfa.html";
+                        }, 1000);
+
+                        bulundu = true;
+                        break;
+                    }
+                } catch {}
+                }
+
+            if (!bulundu) {
+                mesaj.innerText = "❌ Kullanıcı adı/e-posta veya şifre hatalı!";
+            }
+        };
+
+        window.onload = () => {
+            const hatirla = localStorage.getItem("hatirlaKullanici");
+            if (hatirla) {
+                document.getElementById("girisKullanici").value = hatirla;
+                document.getElementById("hatirlaCheckbox").checked = true;
+            }
+        };
+        </script>
+    </div>
+</body>
+</html>
